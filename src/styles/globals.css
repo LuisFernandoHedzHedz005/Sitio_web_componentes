@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* CSS global, provosional */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb; 
+  color: #333;
+}
+
+/* Espaciado*/
+h1, h2, h3 {
+  letter-spacing: -0.5px;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

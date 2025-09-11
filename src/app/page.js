@@ -1,14 +1,25 @@
-import Link from 'next/link'
 import Image from 'next/image'
+import Layout from '../components/Layout'
+import Button from '../components/Button'
+
+/*
+    https://tailwindcss.com/docs/width
+    https://tailwindcss.com/docs/background-color
+    https://tailwindcss.com/docs/box-shadow
+    https://tailwindcss.com/docs/flex-direction
+    
+    Tipografias mas o menos en esta ruta
+    https://tailwindcss.com/docs/text-align
+  */
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      {/* Imagen (No ruta relativa) */}
+    <Layout>
+      {/* Imagen */}
       <div className="mb-8">
         <Image
           src="/img/pc.jpg"
-          alt="PC Components Store"
+          alt="Cargando..."
           width={300}
           height={200}
           className="rounded-lg shadow-md"
@@ -18,34 +29,18 @@ export default function HomePage() {
 
       {/* Título */}
       <h1 className="text-4xl font-bold text-gray-800 mb-4 text-center">
-        Tienda de Componentes PC
+        Gestor de componentes de PC
       </h1>
       
       <p className="text-lg text-gray-600 mb-8 text-center max-w-md">
-        Encuentra los mejores componentes para tu computadora
+        Organiza tus componentes!
       </p>
 
-      {/* REdirecciones a los inicios de sesion */}
+      {/* Botones reutilizando el componente */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <Link
-          href="/auth/login"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
-        >
-          Iniciar Sesión
-        </Link>
-        
-        <Link
-          href="/auth/register"
-          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
-        >
-          Registrarse
-        </Link>
+        <Button type="primary" href="/api/auth/login"> Iniciar Sesión</Button>
+        <Button type="secondary" href="/api/auth/register">Registrarse</Button>
       </div>
-
-      {/* Footer */}
-      <footer className="mt-16 text-gray-500 text-sm">
-        Tienda de componentes
-      </footer>
-    </div>
+    </Layout>
   )
 }
