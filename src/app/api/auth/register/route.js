@@ -16,7 +16,14 @@ import clientPromise from '@/lib/mongodb'
 
 export async function POST(request) {
   try {
-    const { correo, contrasena, confirmarContrasena } = await request.json()
+    const { nombre, apellidoPaterno, apellidoMaterno, correo, contrasena, confirmarContrasena } = await request.json()
+
+    if (!nombre || !apellidoPaterno  || !apellidoMaterno) {
+      return NextResponse.json(
+        { error: 'Completa los nombres' },
+        { status: 400 }
+      )
+    }
 
     // Validacion de campos
     if (!correo || !contrasena) {
@@ -54,7 +61,7 @@ export async function POST(request) {
     const usuarios = db.collection('usuarios')
 
     // Busacamos en la coleccion usuario y si se encuentra el email ingresado, no se puede registrar
-    const usuarioExistente = await usuarios.findOne({ contrasena })
+    const usuarioExistente = await usuarios.findOne({ correo })
     if (usuarioExistente) {
       return NextResponse.json(
         { error: 'El usuario ya existe' },
@@ -70,8 +77,12 @@ export async function POST(request) {
 
     // Genenr usuario
     const nuevoUsuario = {
+      nombre,
+      apellidoPaterno,
+      apellidoMaterno,
       correo,
       contrasena: hashedPassword,
+      rol: 'usuario', // Rol por defecto
       fechaCreacion: new Date()
     }
 

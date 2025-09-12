@@ -8,7 +8,7 @@
     https://tailwindcss.com/docs/text-align
   */
 
-export default function Button({ children, type = 'primary', href }) {
+export default function Button({ children, type = 'primary', href, onClick}) {
   const base = "py-3 px-8 rounded-lg font-medium transition-colors text-white"
   const styles = {
     primary: "bg-blue-600 hover:bg-blue-700",
@@ -24,7 +24,7 @@ export default function Button({ children, type = 'primary', href }) {
   }
 
   return (
-    <button className={`${base} ${styles[type]}`}>
+    <button onClick={onClick} className={`${base} ${styles[type]}`}>
       {children}
     </button>
   )

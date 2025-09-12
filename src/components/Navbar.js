@@ -19,8 +19,8 @@ export default function Navbar() {
       <h1 className="text-xl font-bold text-gray-800">GestorPC</h1>
       <div className="flex gap-4">
         <Link href="/" className="text-gray-600 hover:text-blue-600">Inicio</Link>
-        <Link href="/auth/login" className="text-gray-600 hover:text-blue-600">Login</Link>
-        <Link href="/auth/register" className="text-gray-600 hover:text-blue-600">Registro</Link>
+        <Link href="/login" className="text-gray-600 hover:text-blue-600">Login</Link>
+        <Link href="/register" className="text-gray-600 hover:text-blue-600">Registro</Link>
       </div>
     </nav>
   )

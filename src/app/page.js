@@ -38,8 +38,8 @@ export default function HomePage() {
 
       {/* Botones reutilizando el componente */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <Button type="primary" href="/api/auth/login"> Iniciar Sesión</Button>
-        <Button type="secondary" href="/api/auth/register">Registrarse</Button>
+        <Button type="primary" href="/login"> Iniciar Sesión</Button>
+        <Button type="secondary" href="/register">Registrarse</Button>
       </div>
     </Layout>
   )

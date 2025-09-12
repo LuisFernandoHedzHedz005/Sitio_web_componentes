@@ -10,7 +10,7 @@ https://medium.com/@patel.d/code-example-add-post-api-in-next-js-app-router-503f
 https://medium.com/@dorinelrushi8/how-to-create-a-login-page-in-next-js-f4c57b8b387d
 */
 
-
+// /api/auth/login/routes
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -61,23 +61,35 @@ export async function POST(request) {
     const token = jwt.sign(
       { 
         userId: usuario._id,
-        email: usuario.email 
+        email: usuario.correo,
+        rol: usuario.rol 
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXP } 
+      { expiresIn: process.env.JWT_EXP || '7d' }
     )
 
-    return NextResponse.json(
+    // Crear la respuesta
+    const response = NextResponse.json(
       { 
         message: 'Login exitoso',
-        token,
         user: {
           id: usuario._id,
-          email: usuario.email
+          email: usuario.correo,
+          rol: usuario.rol 
         }
       },
       { status: 200 }
     )
+
+    // Establecer la cookie con el token
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 7 // 7 días
+    })
+
+    return response
 
   } catch (error) {
     console.error('Error en login:', error)
