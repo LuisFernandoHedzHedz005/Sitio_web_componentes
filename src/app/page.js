@@ -33,7 +33,7 @@ export default function HomePage() {
       </h1>
       
       <p className="text-lg text-gray-600 mb-8 text-center max-w-md">
-        Organiza tus componentes!
+        Elige los mejores componentes
       </p>
 
       {/* Botones reutilizando el componente */}
