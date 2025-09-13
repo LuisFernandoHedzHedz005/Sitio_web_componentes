@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from "react" // Agregado useCallback
+import { useState, useEffect, useCallback } from "react" 
 import { useRouter } from "next/navigation"
 import Layout from '@/components/Layout'
 import Button from '@/components/Button'
@@ -34,7 +34,6 @@ export default function GestionProductos() {
     urls_baratos: ['']
   })
 
-  // Mover la función cargarProductos dentro de un useCallback para evitar que se recree en cada render
   const cargarProductos = useCallback(async () => {
     try {
       const res = await fetch('/api/productos/getpost', {
@@ -53,9 +52,8 @@ export default function GestionProductos() {
     } catch (error) {
       console.error('Error al cargar productos:', error)
     }
-  }, [router]) // Agregar router como dependencia
+  }, [router]) 
 
-  // Mover la función verificarAutenticacionAdmin dentro de un useCallback para evitar que se recree en cada render
   const verificarAutenticacionAdmin = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me', {
@@ -85,11 +83,11 @@ export default function GestionProductos() {
     } finally {
       setCargando(false)
     }
-  }, [router, cargarProductos]) // Agregar router y cargarProductos como dependencias
+  }, [router, cargarProductos]) 
 
   useEffect(() => {
     verificarAutenticacionAdmin()
-  }, [verificarAutenticacionAdmin]) // Agregar la función como dependencia para resolver la advertencia
+  }, [verificarAutenticacionAdmin]) 
 
   const manejarSubmit = async (e) => {
     e.preventDefault()
