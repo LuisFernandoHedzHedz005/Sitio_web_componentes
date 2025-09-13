@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react" // Agregado useCallback
 import { useRouter } from "next/navigation"
 import Layout from '@/components/Layout'
 import Button from '@/components/Button'
@@ -34,11 +34,29 @@ export default function GestionProductos() {
     urls_baratos: ['']
   })
 
-  useEffect(() => {
-    verificarAutenticacionAdmin()
-  }, [])
+  // Mover la función cargarProductos dentro de un useCallback para evitar que se recree en cada render
+  const cargarProductos = useCallback(async () => {
+    try {
+      const res = await fetch('/api/productos/getpost', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setProductos(data.productos || [])
+      } else {
+        if (res.status === 401 || res.status === 403) {
+          router.push('/login')
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar productos:', error)
+    }
+  }, [router]) // Agregar router como dependencia
 
-  const verificarAutenticacionAdmin = async () => {
+  // Mover la función verificarAutenticacionAdmin dentro de un useCallback para evitar que se recree en cada render
+  const verificarAutenticacionAdmin = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me', {
         method: 'GET',
@@ -67,27 +85,11 @@ export default function GestionProductos() {
     } finally {
       setCargando(false)
     }
-  }
+  }, [router, cargarProductos]) // Agregar router y cargarProductos como dependencias
 
-  const cargarProductos = async () => {
-    try {
-      const res = await fetch('/api/productos/getpost', {
-        method: 'GET',
-        credentials: 'include'
-      })
-      
-      if (res.ok) {
-        const data = await res.json()
-        setProductos(data.productos || [])
-      } else {
-        if (res.status === 401 || res.status === 403) {
-          router.push('/login')
-        }
-      }
-    } catch (error) {
-      console.error('Error al cargar productos:', error)
-    }
-  }
+  useEffect(() => {
+    verificarAutenticacionAdmin()
+  }, [verificarAutenticacionAdmin]) // Agregar la función como dependencia para resolver la advertencia
 
   const manejarSubmit = async (e) => {
     e.preventDefault()
@@ -346,15 +348,15 @@ export default function GestionProductos() {
                         className="flex-1 border rounded-lg px-3 py-2"
                       />
                       {formulario.imagenes.length > 1 && (
-                        <Button type="secondary" onClick={() => removerCampo('imagenes', index)}>
+                        <button type="button" onClick={() => removerCampo('imagenes', index)} className="px-3 py-2 bg-gray-500 text-white rounded-lg">
                           Eliminar
-                        </Button>
+                        </button>
                       )}
                     </div>
                   ))}
-                  <Button type="secondary" onClick={() => agregarCampo('imagenes')}>
+                  <button type="button" onClick={() => agregarCampo('imagenes')} className="px-3 py-2 bg-gray-500 text-white rounded-lg">
                     Agregar Imagen
-                  </Button>
+                  </button>
                 </div>
 
                 {/* URLs baratos */}
@@ -370,15 +372,15 @@ export default function GestionProductos() {
                         className="flex-1 border rounded-lg px-3 py-2"
                       />
                       {formulario.urls_baratos.length > 1 && (
-                        <Button type="secondary" onClick={() => removerCampo('urls_baratos', index)}>
+                        <button type="button" onClick={() => removerCampo('urls_baratos', index)} className="px-3 py-2 bg-gray-500 text-white rounded-lg">
                           Eliminar
-                        </Button>
+                        </button>
                       )}
                     </div>
                   ))}
-                  <Button type="secondary" onClick={() => agregarCampo('urls_baratos')}>
+                  <button type="button" onClick={() => agregarCampo('urls_baratos')} className="px-3 py-2 bg-gray-500 text-white rounded-lg">
                     Agregar URL
-                  </Button>
+                  </button>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">

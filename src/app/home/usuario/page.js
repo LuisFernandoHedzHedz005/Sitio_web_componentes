@@ -1,8 +1,9 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react" // Agregado useCallback
 import { useRouter } from "next/navigation"
 import Layout from '@/components/Layout'
 import Button from '@/components/Button'
+import Image from 'next/image' // Agregado el componente Image
 
 export default function ComponentesUsuarios() {
   const [productos, setProductos] = useState([])
@@ -24,12 +25,31 @@ export default function ComponentesUsuarios() {
     'Gabinete',
     'Ventiladores'
   ]
+  
+  // Mover la función cargarProductos dentro de un useCallback para evitar que se recree en cada render
+  const cargarProductos = useCallback(async () => {
+    try {
+      const res = await fetch('/api/productos/getpost', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setProductos(data.productos || [])
+      } else {
+        console.error('Error al cargar productos')
+        if (res.status === 401 || res.status === 403) {
+          router.push('/login')
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar productos:', error)
+    }
+  }, [router]) // Agregar router como dependencia
 
-  useEffect(() => {
-    verificarAutenticacion()
-  }, [])
-
-  const verificarAutenticacion = async () => {
+  // Mover la función verificarAutenticacion dentro de un useCallback para evitar que se recree en cada render
+  const verificarAutenticacion = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me', {
         method: 'GET',
@@ -50,28 +70,11 @@ export default function ComponentesUsuarios() {
     } finally {
       setCargando(false)
     }
-  }
+  }, [router, cargarProductos]) // Agregar router y cargarProductos como dependencias
 
-  const cargarProductos = async () => {
-    try {
-      const res = await fetch('/api/productos/getpost', {
-        method: 'GET',
-        credentials: 'include'
-      })
-      
-      if (res.ok) {
-        const data = await res.json()
-        setProductos(data.productos || [])
-      } else {
-        console.error('Error al cargar productos')
-        if (res.status === 401 || res.status === 403) {
-          router.push('/login')
-        }
-      }
-    } catch (error) {
-      console.error('Error al cargar productos:', error)
-    }
-  }
+  useEffect(() => {
+    verificarAutenticacion()
+  }, [verificarAutenticacion]) // Agregar la función como dependencia para resolver la advertencia
 
   const manejarErrorImagen = (productoId, imagenIndex) => {
     setImagenesError(prev => ({
@@ -184,12 +187,13 @@ export default function ComponentesUsuarios() {
                    onClick={() => abrirDetalle(producto)}>
                 
                 {/* img */}
-                <div className="h-48 bg-gray-100 rounded-t-xl overflow-hidden">
+                <div className="h-48 bg-gray-100 rounded-t-xl overflow-hidden relative"> {/* Agregado 'relative' */}
                   {producto.imagenes && producto.imagenes.length > 0 && !imagenesError[`${producto._id}-0`] ? (
-                    <img 
+                    <Image 
                       src={producto.imagenes[0]}
                       alt={producto.nombre}
-                      className="w-full h-full object-cover"
+                      fill // Usar fill para que la imagen ocupe todo el contenedor padre
+                      style={{ objectFit: 'cover' }} // Uso de style para objectFit en el componente Image
                       onError={() => manejarErrorImagen(producto._id, 0)}
                     />
                   ) : (
@@ -265,10 +269,12 @@ export default function ComponentesUsuarios() {
                       <div className="space-y-3">
                         {productoSeleccionado.imagenes.map((imagen, index) => (
                           !imagenesError[`${productoSeleccionado._id}-${index}`] ? (
-                            <img 
+                            <Image 
                               key={index}
                               src={imagen}
                               alt={`${productoSeleccionado.nombre} - Imagen ${index + 1}`}
+                              width={500} // Ajustar el ancho según el diseño
+                              height={300} // Ajustar la altura según el diseño
                               className="w-full rounded-lg border"
                               onError={() => manejarErrorImagen(productoSeleccionado._id, index)}
                             />
