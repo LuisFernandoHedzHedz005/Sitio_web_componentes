@@ -44,23 +44,52 @@ export default function PaginaAdministrador() {
     const obtenerEstadisticas = async () => {
       try {
         const [resUsuarios, resProductos] = await Promise.all([
-          fetch('/api/usuarios/count', { credentials: 'include' }),
-          fetch('/api/productos/count', { credentials: 'include' })
+          fetch('/api/usuarios/count', { 
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }),
+          fetch('/api/productos/count', { 
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
         ])
 
-        if (resUsuarios.ok && resProductos.ok) {
-          const [dataUsuarios, dataProductos] = await Promise.all([
-            resUsuarios.json(),
-            resProductos.json()
-          ])
-          
-          setEstadisticas({
-            totalUsuarios: dataUsuarios.count || 0,
-            totalProductos: dataProductos.count || 0
-          })
+        let totalUsuarios = 0
+        let totalProductos = 0
+
+        if (resUsuarios.ok) {
+          const dataUsuarios = await resUsuarios.json()
+          totalUsuarios = dataUsuarios.count || 0
+        } else {
+          console.error('Error al obtener conteo de usuarios:', resUsuarios.status)
         }
+
+        if (resProductos.ok) {
+          const dataProductos = await resProductos.json()
+          //console.log('Total productos:', dataProductos)
+          totalProductos = dataProductos.count || 0
+          //console.log('Total productos:', totalProductos)
+        } else {
+          console.error('Error al obtener conteo de productos:', resProductos.status)
+        }
+        
+        setEstadisticas({
+          totalUsuarios,
+          totalProductos
+        })
+        
       } catch (error) {
         console.error('Error al obtener estadísticas:', error)
+        setEstadisticas({
+          totalUsuarios: 0,
+          totalProductos: 0
+        })
       }
     }
 
@@ -82,7 +111,7 @@ export default function PaginaAdministrador() {
   }
 
   const navegarAProductos = () => {
-    router.push('/admin/productos')
+    router.push('/home/administrador/adminproductos')
   }
 
   const navegarAUsuarios = () => {
@@ -214,7 +243,6 @@ export default function PaginaAdministrador() {
           </div>
         </div>
 
-        {/* Mensaje informativo */}
         <div className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-4">
           <p className="text-center text-gray-600 text-sm">
             Sistema especializado en componentes de PC - Administra productos y usuarios desde las secciones correspondientes
