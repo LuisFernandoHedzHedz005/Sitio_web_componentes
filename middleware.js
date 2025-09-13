@@ -19,9 +19,13 @@ export function middleware(request) {
     return NextResponse.redirect(new URL("/home/usuario", request.url))
   }
 
+  if (path.startsWith("/home/administrador/adminproductos") && decoded.rol !== "admin") {
+    return NextResponse.redirect(new URL("/home/usuario", request.url))
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/home/:path*"]
+  matcher: ["/home/:path*"],
 }

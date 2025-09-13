@@ -6,6 +6,7 @@ import Button from '@/components/Button'
 
 export default function GestionProductos() {
   const [productos, setProductos] = useState([])
+  const [usuario, setUsuario] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [productoEditando, setProductoEditando] = useState(null)
@@ -34,8 +35,39 @@ export default function GestionProductos() {
   })
 
   useEffect(() => {
-    cargarProductos()
+    verificarAutenticacionAdmin()
   }, [])
+
+  const verificarAutenticacionAdmin = async () => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        if (data.user.rol !== 'admin') {
+          if (data.user.rol === 'usuario') {
+            router.push('/home/usuario')
+          } else {
+            router.push('/login')
+          }
+          return
+        }
+        
+        setUsuario(data.user)
+        await cargarProductos()
+      } else {
+        router.push('/login')
+      }
+    } catch (error) {
+      console.error('Error al verificar autenticación:', error)
+      router.push('/login')
+    } finally {
+      setCargando(false)
+    }
+  }
 
   const cargarProductos = async () => {
     try {
@@ -47,11 +79,13 @@ export default function GestionProductos() {
       if (res.ok) {
         const data = await res.json()
         setProductos(data.productos || [])
+      } else {
+        if (res.status === 401 || res.status === 403) {
+          router.push('/login')
+        }
       }
     } catch (error) {
       console.error('Error al cargar productos:', error)
-    } finally {
-      setCargando(false)
     }
   }
 
@@ -83,7 +117,12 @@ export default function GestionProductos() {
         cerrarFormulario()
         alert(productoEditando ? 'Producto actualizado' : 'Producto creado')
       } else {
-        alert('Error al guardar producto')
+        if (res.status === 401 || res.status === 403) {
+          alert('Sesión expirada. Serás redirigido al login.')
+          router.push('/login')
+        } else {
+          alert('Error al guardar producto')
+        }
       }
     } catch (error) {
       console.error('Error:', error)
@@ -103,7 +142,12 @@ export default function GestionProductos() {
           cargarProductos()
           alert('Producto eliminado')
         } else {
-          alert('Error al eliminar producto')
+          if (res.status === 401 || res.status === 403) {
+            alert('Sesión expirada. Serás redirigido al login.')
+            router.push('/login')
+          } else {
+            alert('Error al eliminar producto')
+          }
         }
       } catch (error) {
         console.error('Error:', error)
@@ -161,6 +205,19 @@ export default function GestionProductos() {
     }))
   }
 
+  const manejarCerrarSesion = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      router.push('/login')
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error)
+      router.push('/login')
+    }
+  }
+
   const productosFiltrados = productos.filter(producto => 
     filtroCategoria === 'todas' || producto.categoria === filtroCategoria
   )
@@ -169,10 +226,14 @@ export default function GestionProductos() {
     return (
       <Layout>
         <div className="flex justify-center items-center min-h-64">
-          <p className="text-lg">Cargando productos...</p>
+          <p className="text-lg">Verificando permisos...</p>
         </div>
       </Layout>
     )
+  }
+
+  if (!usuario) {
+    return null
   }
 
   return (
@@ -182,9 +243,14 @@ export default function GestionProductos() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Gestión de Productos</h1>
-            <p className="text-gray-600">Total: {productos.length} productos</p>
+            <p className="text-gray-600">
+              Bienvenido {usuario.nombre} • Total: {productos.length} productos
+            </p>
           </div>
           <div className="flex gap-3">
+            <Button type="secondary" onClick={manejarCerrarSesion}>
+              Cerrar Sesión
+            </Button>
             <Button type="secondary" onClick={() => router.push('/home/administrador')}>
               Volver al Panel
             </Button>

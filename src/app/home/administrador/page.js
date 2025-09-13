@@ -24,7 +24,7 @@ export default function PaginaAdministrador() {
         
         if (res.ok) {
           const data = await res.json()
-          // Verificar que sea administrador
+          // Verificar admin
           if (data.user.rol !== 'admin') {
             router.push('/home/usuario')
             return
@@ -186,8 +186,7 @@ export default function PaginaAdministrador() {
           </div>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 gap-8 max-w-4xl mx-auto">
           {/* Gestionar Productos */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
             <div className="text-6xl mb-6">🖥️</div>
@@ -205,7 +204,7 @@ export default function PaginaAdministrador() {
                 • Editar especificaciones
               </p>
               <p className="text-sm text-blue-500 font-medium">
-                • Gestionar inventario
+                • Eliminar productos 
               </p>
             </div>
             <div className="mt-6">
@@ -214,39 +213,6 @@ export default function PaginaAdministrador() {
               </Button>
             </div>
           </div>
-
-          {/* Gestionar Usuarios */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
-            <div className="text-6xl mb-6">👥</div>
-            <h3 className="text-2xl font-bold text-purple-800 mb-4">
-              Gestionar Usuarios
-            </h3>
-            <p className="text-purple-600 mb-6 text-lg">
-              Administra las cuentas de usuario del sistema y sus permisos
-            </p>
-            <div className="space-y-3">
-              <p className="text-sm text-purple-500 font-medium">
-                • Ver lista de usuarios
-              </p>
-              <p className="text-sm text-purple-500 font-medium">
-                • Modificar roles y permisos
-              </p>
-              <p className="text-sm text-purple-500 font-medium">
-                • Gestionar cuentas activas
-              </p>
-            </div>
-            <div className="mt-6">
-              <Button type="primary" onClick={navegarAUsuarios}>
-                Administrar Usuarios
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <p className="text-center text-gray-600 text-sm">
-            Sistema especializado en componentes de PC - Administra productos y usuarios desde las secciones correspondientes
-          </p>
         </div>
       </div>
     </Layout>
