@@ -144,7 +144,8 @@ export async function POST(request) {
       correo,
       contrasena: hashedPassword,
       rol: 'usuario', // Rol por defecto
-      fechaCreacion: new Date()
+      fechaCreacion: new Date(),
+      intentosFallidos: 0,
     }
 
     const resultado = await usuarios.insertOne(nuevoUsuario)

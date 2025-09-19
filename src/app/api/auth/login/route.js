@@ -10,7 +10,6 @@ https://medium.com/@patel.d/code-example-add-post-api-in-next-js-app-router-503f
 https://medium.com/@dorinelrushi8/how-to-create-a-login-page-in-next-js-f4c57b8b387d
 */
 
-// /api/auth/login/routes
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -44,16 +43,36 @@ export async function POST(request) {
       )
     }
 
+    //evitar fuerza bruta
+    if(usuario.intentosFallidos >= 5) {
+      return NextResponse.json(
+        { error: 'Cuenta bloqueada por multiples intentos fallidos. Contacta el correo de la administracion con tus datos para desbloquear tu cuenta a luis@gmail.com' },
+        { status: 403 }
+      )
+    }
+
     // Verificar la contraseña
     // bycript https://clerk.com/blog/password-based-authentication-nextjs
 
     const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena)
     if (!contrasenaValida) {
+
+      await usuarios.updateOne(
+        { correo },
+        { $inc: { intentosFallidos: 1 } }
+      )
+
       return NextResponse.json(
         { error: 'Credenciales inválidas' },
         { status: 401 }
       )
     }
+
+    // reinicio de intentos
+    await usuarios.updateOne(
+      { correo },
+      { $set: { intentosFallidos: 0 } }
+    )
 
     // Crear el token Json Web Token
     // https://dev.to/leapcell/implementing-jwt-middleware-in-nextjs-a-complete-guide-to-auth-1b2d
