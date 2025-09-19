@@ -10,31 +10,92 @@ https://medium.com/@patel.d/code-example-add-post-api-in-next-js-app-router-503f
 https://medium.com/@dorinelrushi8/how-to-create-a-login-page-in-next-js-f4c57b8b387d
 */
 
-import { NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
-import clientPromise from '@/lib/mongodb'
+import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import clientPromise from '@/lib/mongodb';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import dns from "dns/promises";
+
+//https://github.com/disposable-email-domains/disposable-email-domains/blob/main/README.md
+
+let blocklist;
+
+async function isDisposable(email) {
+  if (!blocklist) {
+    try {
+      const filePath = path.join(process.cwd(), 'src', 'lib', 'disposable_email_blocklist.conf');
+      const content = await fs.readFile(filePath, { encoding: 'utf-8' });
+      
+      //blocklist = content.split('\r\n').slice(0, -1)
+      blocklist = content.split('\n').filter(line => line.trim() !== '');
+      console.log('lista leida');
+
+    } catch (error) {
+      console.error('Error crítico: No se pudo leer la lista de dominios bloqueados.', error);
+      return false;
+    }
+  }
+
+  const domain = email.split('@')[1];
+  return blocklist.includes(domain);
+}
+
+//https://www.youtube.com/watch?v=rkiDp_t8pT8
+
+/*
+async function estructura_de_correos(correo) {
+   var expReg= /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+
+   if (expReg.test(correo) == false) {
+      return NextResponse.json({ error: 'El formato del correo es inválido' }, { status: 400 });
+   } else {
+      return true;
+   }
+}
+   */
+
+function estructura_de_correos(correo) {
+  const expReg = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+  return expReg.test(correo);
+}
+
+//https://medium.com/@python-javascript-php-html-css/ensuring-email-validity-with-node-js-c22d9dbd62a7
+
+async function validarDominio(correo) {
+  const dominio = correo.split("@")[1];
+  try {
+    const registros = await dns.resolveMx(dominio);
+    return registros && registros.length > 0;
+  } catch (err) { 
+    console.error('Error al resolver el dominio:', err);
+    return false;
+  }
+}
 
 export async function POST(request) {
   try {
-    const { nombre, apellidoPaterno, apellidoMaterno, correo, contrasena, confirmarContrasena } = await request.json()
+    const { nombre, apellidoPaterno, apellidoMaterno, correo, contrasena, confirmarContrasena } = await request.json();
 
-    if (!nombre || !apellidoPaterno  || !apellidoMaterno) {
-      return NextResponse.json(
-        { error: 'Completa los nombres' },
-        { status: 400 }
-      )
-    }
-
-    // Validacion de campos
     if (!correo || !contrasena) {
-      //console.log(correo, contrasena)
-      return NextResponse.json(
-        { error: 'Email y contraseña son requeridos' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Email y contraseña son requeridos' }, { status: 400 });
     }
 
-    // Contraseña que tenfa mas de 6 caracteres para mas seguiridad
+    if (!estructura_de_correos(correo)) {
+      return NextResponse .json({ error: 'El formato del correo es inválido' }, { status: 400 });
+    }
+
+    if (await isDisposable(correo)) {
+      return NextResponse.json(
+        { error: 'El registro con correos temporales no está permitido.' },
+        { status: 400 }
+      );
+    }
+
+    if (!await validarDominio(correo)) {
+      return NextResponse.json({ error: 'El dominio del correo no es válido' }, { status: 400 });
+    }
+
     if (contrasena.length < 6) {
       return NextResponse.json(
         { error: 'La contraseña debe tener al menos 6 caracteres' },
@@ -44,7 +105,7 @@ export async function POST(request) {
 
     if (!confirmarContrasena) {
       return NextResponse.json(
-        { error: 'COnfirma tu contraseña' },
+        { error: 'Confirma tu contraseña' },
         { status: 400 }
       )
     } else if (contrasena !== confirmarContrasena) {
